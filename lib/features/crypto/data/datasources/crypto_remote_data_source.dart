@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/recommendation_entity.dart';
 import '../../domain/entities/crypto_coin_entity.dart';
 import '../models/crypto_coin_model.dart';
 
 abstract class ICryptoRemoteDataSource {
   Future<List<CryptoCoinModel>> getTopCoins();
-  Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins);
+  Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins, String locale);
+  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice);
 }
 
 class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
@@ -36,7 +38,49 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
   }
 
   @override
-  Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins) async {
+  Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins, String locale) async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T').first;
+    final cacheKeySuffix = '_$locale';
+    final cachedDate = prefs.getString('recommendation_date$cacheKeySuffix');
+
+    if (cachedDate == today && prefs.containsKey('recommendation_coin_id$cacheKeySuffix')) {
+      if (coins.isEmpty) {
+        throw Exception('No coins data available');
+      }
+      
+      final coinId = prefs.getString('recommendation_coin_id$cacheKeySuffix');
+      final reason = prefs.getString('recommendation_reason$cacheKeySuffix') ?? '';
+      final score = prefs.getDouble('recommendation_score$cacheKeySuffix') ?? 0.85;
+      final whale = prefs.getString('recommendation_whale$cacheKeySuffix') ?? '';
+      final volume = prefs.getString('recommendation_volume$cacheKeySuffix') ?? '\$1.2B';
+      final change1W = prefs.getDouble('recommendation_change1w$cacheKeySuffix') ?? 5.0;
+      final change1M = prefs.getDouble('recommendation_change1m$cacheKeySuffix') ?? 10.0;
+      final change1Y = prefs.getDouble('recommendation_change1y$cacheKeySuffix') ?? 20.0;
+      final prediction = prefs.getString('recommendation_prediction$cacheKeySuffix') ?? 'Bullish';
+      final details = prefs.getString('recommendation_details$cacheKeySuffix') ?? '';
+
+      CryptoCoinEntity? coin;
+      try {
+        coin = coins.firstWhere((c) => c.id == coinId);
+      } catch (e) {
+        coin = coins.first;
+      }
+
+      return RecommendationEntity(
+        coin: coin,
+        reason: reason,
+        confidenceScore: score,
+        whaleActivitySummary: whale,
+        tradingVolume24h: volume,
+        change1W: change1W,
+        change1M: change1M,
+        change1Y: change1Y,
+        prediction: prediction,
+        analysisDetails: details,
+      );
+    }
+
     // Simulate network delay for "AI Processing"
     await Future.delayed(const Duration(seconds: 2));
 
@@ -45,21 +89,190 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
     }
 
     final random = Random();
-    final candidate = coins[random.nextInt(coins.length)];
+    
+    // 1. Analyze all coins and score them
+    CryptoCoinEntity bestCoin = coins.first;
+    double bestScore = -1.0;
+    
+    // Mock metrics for the best coin
+    double bestChange1W = 0;
+    double bestChange1M = 0;
+    double bestChange1Y = 0;
+    String bestVolume = "";
 
-    final whaleMoves = [
-      "Large wallet (0x4a...e9) accumulated 5000 ${candidate.symbol.toUpperCase()} in the last hour.",
-      "Institutional inflow detected on OTC desks for ${candidate.name}.",
-      "Significant withdrawal from Binance to cold storage detected."
-    ];
-    final selectedWhaleMove = whaleMoves[random.nextInt(whaleMoves.length)];
+    for (final coin in coins) {
+       // Generate mock metrics
+       final change1W = (random.nextDouble() * 20) - 5; // -5% to +15%
+       final change1M = (random.nextDouble() * 40) - 10; // -10% to +30%
+       final change1Y = (random.nextDouble() * 100) - 20; // -20% to +80%
+       
+       // Calculate score: weighted average of changes + random factor
+       double score = (change1W * 0.3) + (change1M * 0.3) + (change1Y * 0.2) + (random.nextDouble() * 10);
+       
+       if (score > bestScore) {
+         bestScore = score;
+         bestCoin = coin;
+         bestChange1W = change1W;
+         bestChange1M = change1M;
+         bestChange1Y = change1Y;
+         bestVolume = "\$${(random.nextDouble() * 5 + 0.5).toStringAsFixed(1)}B";
+       }
+    }
+
+    final candidate = bestCoin;
+    String reason;
+    String selectedWhaleMove;
+    String prediction;
+    String analysisDetails;
+    
+    if (locale == 'ru') {
+       final whaleMoves = [
+        "Крупный кошелек (0x4a...e9) накопил 5000 ${candidate.symbol.toUpperCase()} за последний час.",
+        "Зафиксирован институциональный приток на OTC площадках для ${candidate.name}.",
+        "Обнаружен значительный вывод с Binance на холодное хранение."
+      ];
+      selectedWhaleMove = whaleMoves[random.nextInt(whaleMoves.length)];
+      
+      reason = "AI модель 'Alpha-7' выбрала ${candidate.name} на основе комплексного анализа. Монета показывает сильный восходящий тренд на недельном (+${bestChange1W.toStringAsFixed(1)}%) и месячном (+${bestChange1M.toStringAsFixed(1)}%) таймфреймах.";
+      prediction = "Бычий прорыв";
+      analysisDetails = "Технический анализ указывает на перепроданность RSI на 4H таймфрейме. Фундаментально, объем торгов ($bestVolume) подтверждает интерес покупателей. Активность китов сигнализирует о накоплении позиций перед возможным скачком цены.";
+      
+    } else {
+      final whaleMoves = [
+        "Large wallet (0x4a...e9) accumulated 5000 ${candidate.symbol.toUpperCase()} in the last hour.",
+        "Institutional inflow detected on OTC desks for ${candidate.name}.",
+        "Significant withdrawal from Binance to cold storage detected."
+      ];
+      selectedWhaleMove = whaleMoves[random.nextInt(whaleMoves.length)];
+      
+      reason = "AI Model 'Alpha-7' selected ${candidate.name} based on comprehensive analysis. The coin shows a strong uptrend on weekly (+${bestChange1W.toStringAsFixed(1)}%) and monthly (+${bestChange1M.toStringAsFixed(1)}%) timeframes.";
+      prediction = "Bullish Breakout";
+      analysisDetails = "Technical analysis indicates oversold RSI on the 4H timeframe. Fundamentally, trading volume ($bestVolume) confirms buyer interest. Whale activity signals accumulation ahead of a potential price surge.";
+    }
+
+    final confidenceScore = 0.85 + (random.nextDouble() * 0.1);
+
+    // Cache the new recommendation
+    await prefs.setString('recommendation_date$cacheKeySuffix', today);
+    await prefs.setString('recommendation_coin_id$cacheKeySuffix', candidate.id);
+    await prefs.setString('recommendation_reason$cacheKeySuffix', reason);
+    await prefs.setDouble('recommendation_score$cacheKeySuffix', confidenceScore);
+    await prefs.setString('recommendation_whale$cacheKeySuffix', selectedWhaleMove);
+    await prefs.setString('recommendation_volume$cacheKeySuffix', bestVolume);
+    await prefs.setDouble('recommendation_change1w$cacheKeySuffix', bestChange1W);
+    await prefs.setDouble('recommendation_change1m$cacheKeySuffix', bestChange1M);
+    await prefs.setDouble('recommendation_change1y$cacheKeySuffix', bestChange1Y);
+    await prefs.setString('recommendation_prediction$cacheKeySuffix', prediction);
+    await prefs.setString('recommendation_details$cacheKeySuffix', analysisDetails);
 
     return RecommendationEntity(
       coin: candidate,
-      reason: "AI Model 'Alpha-7' detects a bullish divergence in RSI combined with significant whale accumulation. Sentiment analysis on X (Twitter) is 85% positive.",
-      confidenceScore: 0.85 + (random.nextDouble() * 0.1),
+      reason: reason,
+      confidenceScore: confidenceScore,
       whaleActivitySummary: selectedWhaleMove,
+      tradingVolume24h: bestVolume,
+      change1W: bestChange1W,
+      change1M: bestChange1M,
+      change1Y: bestChange1Y,
+      prediction: prediction,
+      analysisDetails: analysisDetails,
     );
+  }
+
+  @override
+  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice) async {
+    try {
+      // Map period to days parameter for API
+      int days;
+      switch (period) {
+        case '1D': days = 1; break;
+        case '3D': days = 3; break;
+        case '1W': days = 7; break;
+        case '1M': days = 30; break;
+        case '1Y': days = 365; break;
+        default: days = 1;
+      }
+
+      final response = await client.get(
+        Uri.parse('$_baseUrl/coins/$coinId/market_chart?vs_currency=usd&days=$days'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final prices = data['prices'] as List<dynamic>;
+        
+        // Convert to our format: [[timestamp, price], ...]
+        return prices.map<List<double>>((item) {
+          final list = item as List<dynamic>;
+          return <double>[list[0].toDouble(), list[1].toDouble()];
+        }).toList();
+      } else {
+        // Fallback to mock data if API fails
+        return _generateMockChartData(period, currentPrice);
+      }
+    } catch (e) {
+      // Fallback to mock data on error
+      return _generateMockChartData(period, currentPrice);
+    }
+  }
+
+  List<List<double>> _generateMockChartData(String period, double currentPrice) {
+    // Mock data generation as fallback
+    int points;
+    int interval;
+    switch (period) {
+      case '1D': 
+        points = 24; 
+        interval = 3600000; // 1 hour
+        break;
+      case '3D':
+        points = 72;
+        interval = 3600000; // 1 hour
+        break;
+      case '1W': 
+        points = 168; // Hourly for week
+        interval = 3600000;
+        break;
+      case '1M': 
+        points = 120; // Every 6 hours
+        interval = 21600000;
+        break;
+      case '1Y': 
+        points = 365; // Daily
+        interval = 86400000;
+        break;
+      default: 
+        points = 24;
+        interval = 3600000;
+    }
+
+    final random = Random();
+
+    final List<List<double>> chartData = [];
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // Generate data backwards from current price
+    double price = currentPrice;
+    
+    List<List<double>> reversedData = [];
+    reversedData.add([now.toDouble(), price]);
+
+    for (int i = 1; i < points; i++) {
+      // Random walk with trend
+      // Volatility depends on period
+      double volatility = 0.015; // 1.5%
+      if (period == '1D' || period == '3D') volatility = 0.005; // 0.5%
+      
+      double change = (random.nextDouble() - 0.5) * volatility;
+      price = price / (1 + change); // Reverse the change to go back in time
+      
+      reversedData.add([
+        (now - i * interval).toDouble(),
+        price
+      ]);
+    }
+
+    return reversedData.reversed.toList();
   }
 
   List<CryptoCoinModel> _getMockCoins() {

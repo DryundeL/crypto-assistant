@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/home_viewmodel.dart';
-import 'widgets/widgets.dart';
+import '../widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) => const Center(child: CircularProgressIndicator()),
     );
 
-    await viewModel.getRecommendation();
+    final locale = Localizations.localeOf(context).languageCode;
+    await viewModel.getRecommendation(locale);
 
     if (!mounted) return;
     Navigator.pop(context); // Close loading
@@ -55,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Crypto Assistant'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+          ),
           IconButton(
             icon: const Icon(Icons.auto_awesome),
             tooltip: 'Get AI Recommendation',

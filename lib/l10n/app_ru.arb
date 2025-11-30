@@ -1,0 +1,23 @@
+{
+  "appTitle": "Крипто Ассистент",
+  "dailyRecommendation": "AI Рекомендация на сегодня",
+  "confidenceScore": "Уровень доверия",
+  "whyThisCoin": "Почему эта монета?",
+  "whaleActivity": "Активность китов",
+  "gotIt": "Понятно!",
+  "settings": "Настройки",
+  "theme": "Тема",
+  "language": "Язык",
+  "system": "Системная",
+  "light": "Светлая",
+  "dark": "Темная",
+  "english": "Английский",
+  "russian": "Русский",
+  "chart1D": "1Д",
+  "chart3D": "3Д",
+  "chart1W": "1Н",
+  "chart1M": "1М",
+  "chart1Y": "1Г",
+  "marketCap": "Капитализация",
+  "volume": "Объем"
+}

@@ -39,14 +39,14 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getRecommendation() async {
+  Future<void> getRecommendation(String locale) async {
     if (_coins.isEmpty) return;
 
     _isRecommendationLoading = true;
     notifyListeners();
 
     try {
-      _recommendation = await repository.getDailyRecommendation(_coins);
+      _recommendation = await repository.getDailyRecommendation(_coins, locale);
     } catch (e) {
       _errorMessage = "Failed to get recommendation: $e";
     } finally {

@@ -1,0 +1,23 @@
+{
+  "appTitle": "Crypto Assistant",
+  "dailyRecommendation": "AI Recommendation for Today",
+  "confidenceScore": "Confidence Score",
+  "whyThisCoin": "Why this coin?",
+  "whaleActivity": "Whale Activity",
+  "gotIt": "Got it!",
+  "settings": "Settings",
+  "theme": "Theme",
+  "language": "Language",
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+  "english": "English",
+  "russian": "Russian",
+  "chart1D": "1D",
+  "chart3D": "3D",
+  "chart1W": "1W",
+  "chart1M": "1M",
+  "chart1Y": "1Y",
+  "marketCap": "Market Cap",
+  "volume": "Volume"
+}

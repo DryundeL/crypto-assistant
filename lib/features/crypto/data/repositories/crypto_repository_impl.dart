@@ -14,7 +14,12 @@ class CryptoRepositoryImpl implements ICryptoRepository {
   }
 
   @override
-  Future<RecommendationEntity> getDailyRecommendation(List<CryptoCoinEntity> coins) async {
-    return await remoteDataSource.getAiRecommendation(coins);
+  Future<RecommendationEntity> getDailyRecommendation(List<CryptoCoinEntity> coins, String locale) async {
+    return await remoteDataSource.getAiRecommendation(coins, locale);
+  }
+
+  @override
+  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice) async {
+    return await remoteDataSource.getMarketChart(coinId, period, currentPrice);
   }
 }
