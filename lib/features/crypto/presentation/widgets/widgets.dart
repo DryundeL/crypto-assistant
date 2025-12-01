@@ -153,7 +153,7 @@ class RecommendationModal extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             recommendation.analysisDetails,
-            style: const TextStyle(fontSize: 14, height: 1.4),
+            style: TextStyle(fontSize: 14, height: 1.4, color: Colors.grey.shade800),
           ),
           const SizedBox(height: 16),
           Container(

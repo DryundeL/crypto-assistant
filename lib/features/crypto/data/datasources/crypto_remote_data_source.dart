@@ -44,43 +44,51 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T').first;
     final cacheKeySuffix = '_$locale';
-    final cachedDate = prefs.getString('recommendation_date$cacheKeySuffix');
+    
+    // Check if we have a cached recommendation for today (coin ID is language-independent)
+    final cachedDate = prefs.getString('recommendation_date');
+    final cachedCoinId = prefs.getString('recommendation_coin_id');
 
-    if (cachedDate == today && prefs.containsKey('recommendation_coin_id$cacheKeySuffix')) {
+    if (cachedDate == today && cachedCoinId != null) {
       if (coins.isEmpty) {
         throw Exception('No coins data available');
       }
       
-      final coinId = prefs.getString('recommendation_coin_id$cacheKeySuffix');
-      final reason = prefs.getString('recommendation_reason$cacheKeySuffix') ?? '';
-      final score = prefs.getDouble('recommendation_score$cacheKeySuffix') ?? 0.85;
-      final whale = prefs.getString('recommendation_whale$cacheKeySuffix') ?? '';
-      final volume = prefs.getString('recommendation_volume$cacheKeySuffix') ?? '\$1.2B';
-      final change1W = prefs.getDouble('recommendation_change1w$cacheKeySuffix') ?? 5.0;
-      final change1M = prefs.getDouble('recommendation_change1m$cacheKeySuffix') ?? 10.0;
-      final change1Y = prefs.getDouble('recommendation_change1y$cacheKeySuffix') ?? 20.0;
-      final prediction = prefs.getString('recommendation_prediction$cacheKeySuffix') ?? 'Bullish';
-      final details = prefs.getString('recommendation_details$cacheKeySuffix') ?? '';
+      // Get localized text for this language
+      final reason = prefs.getString('recommendation_reason$cacheKeySuffix');
+      final whale = prefs.getString('recommendation_whale$cacheKeySuffix');
+      final prediction = prefs.getString('recommendation_prediction$cacheKeySuffix');
+      final details = prefs.getString('recommendation_details$cacheKeySuffix');
+      
+      // If we have cached translations for this language, use them
+      if (reason != null && whale != null && prediction != null && details != null) {
+        final score = prefs.getDouble('recommendation_score') ?? 0.85;
+        final volume = prefs.getString('recommendation_volume') ?? '\$1.2B';
+        final change1W = prefs.getDouble('recommendation_change1w') ?? 5.0;
+        final change1M = prefs.getDouble('recommendation_change1m') ?? 10.0;
+        final change1Y = prefs.getDouble('recommendation_change1y') ?? 20.0;
 
-      CryptoCoinEntity? coin;
-      try {
-        coin = coins.firstWhere((c) => c.id == coinId);
-      } catch (e) {
-        coin = coins.first;
+        CryptoCoinEntity? coin;
+        try {
+          coin = coins.firstWhere((c) => c.id == cachedCoinId);
+        } catch (e) {
+          coin = coins.first;
+        }
+
+        return RecommendationEntity(
+          coin: coin,
+          reason: reason,
+          confidenceScore: score,
+          whaleActivitySummary: whale,
+          tradingVolume24h: volume,
+          change1W: change1W,
+          change1M: change1M,
+          change1Y: change1Y,
+          prediction: prediction,
+          analysisDetails: details,
+        );
       }
-
-      return RecommendationEntity(
-        coin: coin,
-        reason: reason,
-        confidenceScore: score,
-        whaleActivitySummary: whale,
-        tradingVolume24h: volume,
-        change1W: change1W,
-        change1M: change1M,
-        change1Y: change1Y,
-        prediction: prediction,
-        analysisDetails: details,
-      );
+      // If no translations for this language, regenerate with same coin
     }
 
     // Simulate network delay for "AI Processing"
@@ -92,36 +100,71 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
 
     final random = Random();
     
-    // 1. Analyze all coins and score them
-    CryptoCoinEntity bestCoin = coins.first;
-    double bestScore = -1.0;
+    // If we have a cached coin for today, use it; otherwise select a new one
+    CryptoCoinEntity selectedCoin;
+    double bestChange1W;
+    double bestChange1M;
+    double bestChange1Y;
+    String bestVolume;
+    double confidenceScore;
     
-    // Mock metrics for the best coin
-    double bestChange1W = 0;
-    double bestChange1M = 0;
-    double bestChange1Y = 0;
-    String bestVolume = "";
+    if (cachedDate == today && cachedCoinId != null) {
+      // Reuse the same coin but generate new translations
+      try {
+        selectedCoin = coins.firstWhere((c) => c.id == cachedCoinId);
+      } catch (e) {
+        selectedCoin = coins.first;
+      }
+      
+      // Retrieve cached metrics
+      bestChange1W = prefs.getDouble('recommendation_change1w') ?? 5.0;
+      bestChange1M = prefs.getDouble('recommendation_change1m') ?? 10.0;
+      bestChange1Y = prefs.getDouble('recommendation_change1y') ?? 20.0;
+      bestVolume = prefs.getString('recommendation_volume') ?? '\$1.2B';
+      confidenceScore = prefs.getDouble('recommendation_score') ?? 0.85;
+    } else {
+      // Select a new coin
+      CryptoCoinEntity bestCoin = coins.first;
+      double bestScore = -1.0;
+      
+      bestChange1W = 0;
+      bestChange1M = 0;
+      bestChange1Y = 0;
+      bestVolume = "";
 
-    for (final coin in coins) {
-       // Generate mock metrics
-       final change1W = (random.nextDouble() * 20) - 5; // -5% to +15%
-       final change1M = (random.nextDouble() * 40) - 10; // -10% to +30%
-       final change1Y = (random.nextDouble() * 100) - 20; // -20% to +80%
-       
-       // Calculate score: weighted average of changes + random factor
-       double score = (change1W * 0.3) + (change1M * 0.3) + (change1Y * 0.2) + (random.nextDouble() * 10);
-       
-       if (score > bestScore) {
-         bestScore = score;
-         bestCoin = coin;
-         bestChange1W = change1W;
-         bestChange1M = change1M;
-         bestChange1Y = change1Y;
-         bestVolume = "\$${(random.nextDouble() * 5 + 0.5).toStringAsFixed(1)}B";
-       }
+      for (final coin in coins) {
+         // Generate mock metrics
+         final change1W = (random.nextDouble() * 20) - 5; // -5% to +15%
+         final change1M = (random.nextDouble() * 40) - 10; // -10% to +30%
+         final change1Y = (random.nextDouble() * 100) - 20; // -20% to +80%
+         
+         // Calculate score: weighted average of changes + random factor
+         double score = (change1W * 0.3) + (change1M * 0.3) + (change1Y * 0.2) + (random.nextDouble() * 10);
+         
+         if (score > bestScore) {
+           bestScore = score;
+           bestCoin = coin;
+           bestChange1W = change1W;
+           bestChange1M = change1M;
+           bestChange1Y = change1Y;
+           bestVolume = "\$${(random.nextDouble() * 5 + 0.5).toStringAsFixed(1)}B";
+         }
+      }
+      
+      selectedCoin = bestCoin;
+      confidenceScore = 0.85 + (random.nextDouble() * 0.1);
+      
+      // Cache the coin ID and metrics (language-independent)
+      await prefs.setString('recommendation_date', today);
+      await prefs.setString('recommendation_coin_id', selectedCoin.id);
+      await prefs.setDouble('recommendation_score', confidenceScore);
+      await prefs.setString('recommendation_volume', bestVolume);
+      await prefs.setDouble('recommendation_change1w', bestChange1W);
+      await prefs.setDouble('recommendation_change1m', bestChange1M);
+      await prefs.setDouble('recommendation_change1y', bestChange1Y);
     }
 
-    final candidate = bestCoin;
+    // Generate localized text
     String reason;
     String selectedWhaleMove;
     String prediction;
@@ -129,46 +172,37 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
     
     if (locale == 'ru') {
        final whaleMoves = [
-        "Крупный кошелек (0x4a...e9) накопил 5000 ${candidate.symbol.toUpperCase()} за последний час.",
-        "Зафиксирован институциональный приток на OTC площадках для ${candidate.name}.",
+        "Крупный кошелек (0x4a...e9) накопил 5000 ${selectedCoin.symbol.toUpperCase()} за последний час.",
+        "Зафиксирован институциональный приток на OTC площадках для ${selectedCoin.name}.",
         "Обнаружен значительный вывод с Binance на холодное хранение."
       ];
       selectedWhaleMove = whaleMoves[random.nextInt(whaleMoves.length)];
       
-      reason = "AI модель 'Alpha-7' выбрала ${candidate.name} на основе комплексного анализа. Монета показывает сильный восходящий тренд на недельном (+${bestChange1W.toStringAsFixed(1)}%) и месячном (+${bestChange1M.toStringAsFixed(1)}%) таймфреймах.";
+      reason = "AI модель 'Alpha-7' выбрала ${selectedCoin.name} на основе комплексного анализа. Монета показывает сильный восходящий тренд на недельном (+${bestChange1W.toStringAsFixed(1)}%) и месячном (+${bestChange1M.toStringAsFixed(1)}%) таймфреймах.";
       prediction = "Бычий прорыв";
       analysisDetails = "Технический анализ указывает на перепроданность RSI на 4H таймфрейме. Фундаментально, объем торгов ($bestVolume) подтверждает интерес покупателей. Активность китов сигнализирует о накоплении позиций перед возможным скачком цены.";
       
     } else {
       final whaleMoves = [
-        "Large wallet (0x4a...e9) accumulated 5000 ${candidate.symbol.toUpperCase()} in the last hour.",
-        "Institutional inflow detected on OTC desks for ${candidate.name}.",
+        "Large wallet (0x4a...e9) accumulated 5000 ${selectedCoin.symbol.toUpperCase()} in the last hour.",
+        "Institutional inflow detected on OTC desks for ${selectedCoin.name}.",
         "Significant withdrawal from Binance to cold storage detected."
       ];
       selectedWhaleMove = whaleMoves[random.nextInt(whaleMoves.length)];
       
-      reason = "AI Model 'Alpha-7' selected ${candidate.name} based on comprehensive analysis. The coin shows a strong uptrend on weekly (+${bestChange1W.toStringAsFixed(1)}%) and monthly (+${bestChange1M.toStringAsFixed(1)}%) timeframes.";
+      reason = "AI Model 'Alpha-7' selected ${selectedCoin.name} based on comprehensive analysis. The coin shows a strong uptrend on weekly (+${bestChange1W.toStringAsFixed(1)}%) and monthly (+${bestChange1M.toStringAsFixed(1)}%) timeframes.";
       prediction = "Bullish Breakout";
       analysisDetails = "Technical analysis indicates oversold RSI on the 4H timeframe. Fundamentally, trading volume ($bestVolume) confirms buyer interest. Whale activity signals accumulation ahead of a potential price surge.";
     }
 
-    final confidenceScore = 0.85 + (random.nextDouble() * 0.1);
-
-    // Cache the new recommendation
-    await prefs.setString('recommendation_date$cacheKeySuffix', today);
-    await prefs.setString('recommendation_coin_id$cacheKeySuffix', candidate.id);
+    // Cache the localized text
     await prefs.setString('recommendation_reason$cacheKeySuffix', reason);
-    await prefs.setDouble('recommendation_score$cacheKeySuffix', confidenceScore);
     await prefs.setString('recommendation_whale$cacheKeySuffix', selectedWhaleMove);
-    await prefs.setString('recommendation_volume$cacheKeySuffix', bestVolume);
-    await prefs.setDouble('recommendation_change1w$cacheKeySuffix', bestChange1W);
-    await prefs.setDouble('recommendation_change1m$cacheKeySuffix', bestChange1M);
-    await prefs.setDouble('recommendation_change1y$cacheKeySuffix', bestChange1Y);
     await prefs.setString('recommendation_prediction$cacheKeySuffix', prediction);
     await prefs.setString('recommendation_details$cacheKeySuffix', analysisDetails);
 
     return RecommendationEntity(
-      coin: candidate,
+      coin: selectedCoin,
       reason: reason,
       confidenceScore: confidenceScore,
       whaleActivitySummary: selectedWhaleMove,
