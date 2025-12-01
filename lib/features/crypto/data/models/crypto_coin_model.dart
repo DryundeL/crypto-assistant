@@ -12,12 +12,12 @@ class CryptoCoinModel extends CryptoCoinEntity {
 
   factory CryptoCoinModel.fromJson(Map<String, dynamic> json) {
     return CryptoCoinModel(
-      id: json['id'],
-      symbol: json['symbol'],
-      name: json['name'],
-      currentPrice: (json['current_price'] as num).toDouble(),
-      priceChangePercentage24h: (json['price_change_percentage_24h'] as num).toDouble(),
-      image: json['image'],
+      id: json['id'] ?? '',
+      symbol: json['symbol'] ?? '',
+      name: json['name'] ?? '',
+      currentPrice: (json['current_price'] as num?)?.toDouble() ?? 0.0,
+      priceChangePercentage24h: (json['price_change_percentage_24h'] as num?)?.toDouble() ?? 0.0,
+      image: json['image'] ?? '',
     );
   }
 }

@@ -30,9 +30,11 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
         final List<dynamic> data = json.decode(response.body);
         return data.map((json) => CryptoCoinModel.fromJson(json)).toList();
       } else {
+        print('API Error: ${response.statusCode} - ${response.body}');
         return _getMockCoins();
       }
     } catch (e) {
+      print('Network Error: $e');
       return _getMockCoins();
     }
   }
@@ -276,42 +278,152 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
   }
 
   List<CryptoCoinModel> _getMockCoins() {
+    final random = Random();
+    
+    // Helper to generate random price change
+    double randomChange() => (random.nextDouble() * 20) - 10; // -10% to +10%
+    
     return [
-      const CryptoCoinModel(
+      CryptoCoinModel(
           id: 'bitcoin',
           symbol: 'btc',
           name: 'Bitcoin',
-          currentPrice: 95000.0,
-          priceChangePercentage24h: 2.5,
+          currentPrice: 125000.0 + (random.nextDouble() * 2000),
+          priceChangePercentage24h: 1.5 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png'),
-      const CryptoCoinModel(
+      CryptoCoinModel(
           id: 'ethereum',
           symbol: 'eth',
           name: 'Ethereum',
-          currentPrice: 3500.0,
-          priceChangePercentage24h: -1.2,
+          currentPrice: 6500.0 + (random.nextDouble() * 100),
+          priceChangePercentage24h: 2.2 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'),
-      const CryptoCoinModel(
+      CryptoCoinModel(
           id: 'solana',
           symbol: 'sol',
           name: 'Solana',
-          currentPrice: 145.0,
-          priceChangePercentage24h: 5.8,
+          currentPrice: 320.0 + (random.nextDouble() * 10),
+          priceChangePercentage24h: 4.8 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png'),
-      const CryptoCoinModel(
+      CryptoCoinModel(
           id: 'ripple',
           symbol: 'xrp',
           name: 'XRP',
-          currentPrice: 0.65,
-          priceChangePercentage24h: 0.5,
+          currentPrice: 2.8 + (random.nextDouble() * 0.1),
+          priceChangePercentage24h: 1.5 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png'),
-      const CryptoCoinModel(
+      CryptoCoinModel(
           id: 'cardano',
           symbol: 'ada',
           name: 'Cardano',
-          currentPrice: 0.45,
-          priceChangePercentage24h: -0.8,
+          currentPrice: 1.8 + (random.nextDouble() * 0.05),
+          priceChangePercentage24h: -0.8 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png'),
+      CryptoCoinModel(
+          id: 'avalanche-2',
+          symbol: 'avax',
+          name: 'Avalanche',
+          currentPrice: 85.0 + (random.nextDouble() * 2),
+          priceChangePercentage24h: 3.2 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png'),
+      CryptoCoinModel(
+          id: 'dogecoin',
+          symbol: 'doge',
+          name: 'Dogecoin',
+          currentPrice: 0.45 + (random.nextDouble() * 0.02),
+          priceChangePercentage24h: 5.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png'),
+      CryptoCoinModel(
+          id: 'polkadot',
+          symbol: 'dot',
+          name: 'Polkadot',
+          currentPrice: 15.5 + (random.nextDouble() * 0.5),
+          priceChangePercentage24h: 1.1 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/12171/large/polkadot.png'),
+      CryptoCoinModel(
+          id: 'chainlink',
+          symbol: 'link',
+          name: 'Chainlink',
+          currentPrice: 45.0 + (random.nextDouble() * 1),
+          priceChangePercentage24h: 2.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png'),
+      CryptoCoinModel(
+          id: 'polygon',
+          symbol: 'matic',
+          name: 'Polygon',
+          currentPrice: 1.8 + (random.nextDouble() * 0.05),
+          priceChangePercentage24h: -0.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png'),
+      CryptoCoinModel(
+          id: 'shiba-inu',
+          symbol: 'shib',
+          name: 'Shiba Inu',
+          currentPrice: 0.000085 + (random.nextDouble() * 0.000005),
+          priceChangePercentage24h: 8.0 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png'),
+      CryptoCoinModel(
+          id: 'litecoin',
+          symbol: 'ltc',
+          name: 'Litecoin',
+          currentPrice: 150.0 + (random.nextDouble() * 2),
+          priceChangePercentage24h: 0.8 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png'),
+      CryptoCoinModel(
+          id: 'uniswap',
+          symbol: 'uni',
+          name: 'Uniswap',
+          currentPrice: 25.0 + (random.nextDouble() * 0.5),
+          priceChangePercentage24h: 2.2 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png'),
+      CryptoCoinModel(
+          id: 'bitcoin-cash',
+          symbol: 'bch',
+          name: 'Bitcoin Cash',
+          currentPrice: 850.0 + (random.nextDouble() * 10),
+          priceChangePercentage24h: 1.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png'),
+      CryptoCoinModel(
+          id: 'near',
+          symbol: 'near',
+          name: 'NEAR Protocol',
+          currentPrice: 12.8 + (random.nextDouble() * 0.2),
+          priceChangePercentage24h: 4.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/10365/large/near.png'),
+      CryptoCoinModel(
+          id: 'aptos',
+          symbol: 'apt',
+          name: 'Aptos',
+          currentPrice: 28.0 + (random.nextDouble() * 0.5),
+          priceChangePercentage24h: -1.8 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/26455/large/aptos_round.png'),
+      CryptoCoinModel(
+          id: 'cosmos',
+          symbol: 'atom',
+          name: 'Cosmos Hub',
+          currentPrice: 18.5 + (random.nextDouble() * 0.3),
+          priceChangePercentage24h: 0.2 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png'),
+      CryptoCoinModel(
+          id: 'stellar',
+          symbol: 'xlm',
+          name: 'Stellar',
+          currentPrice: 0.35 + (random.nextDouble() * 0.01),
+          priceChangePercentage24h: -0.3 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/100/large/Stellar_symbol_black_RGB.png'),
+      CryptoCoinModel(
+          id: 'monero',
+          symbol: 'xmr',
+          name: 'Monero',
+          currentPrice: 220.0 + (random.nextDouble() * 5),
+          priceChangePercentage24h: 1.0 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/69/large/monero_logo.png'),
+      CryptoCoinModel(
+          id: 'ethereum-classic',
+          symbol: 'etc',
+          name: 'Ethereum Classic',
+          currentPrice: 45.0 + (random.nextDouble() * 1),
+          priceChangePercentage24h: -2.0 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/453/large/ethereum-classic-logo.png'),
     ];
   }
 }
