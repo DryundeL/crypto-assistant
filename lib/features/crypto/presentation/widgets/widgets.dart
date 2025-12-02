@@ -197,323 +197,325 @@ class RecommendationModal extends StatelessWidget {
               width: 2,
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.deepPurple.withOpacity(0.3),
-                          Colors.deepPurple.withOpacity(0.1),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.deepPurple.withOpacity(0.4),
-                      ),
-                    ),
-                    child: const Icon(Icons.auto_awesome, color: Colors.deepPurple, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'AI Analysis Report',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.deepPurple,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Center(
-                child: Column(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.deepPurple.withOpacity(0.3),
+                            Colors.deepPurple.withOpacity(0.1),
+                          ],
+                        ),
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.deepPurple.withOpacity(0.4),
-                            Colors.deepPurple.withOpacity(0.2),
-                          ],
-                        ),
                         border: Border.all(
-                          color: Colors.deepPurple.withOpacity(0.5),
-                          width: 2,
+                          color: Colors.deepPurple.withOpacity(0.4),
                         ),
                       ),
-                      child: CircleAvatar(
-                        radius: 36,
-                        backgroundImage: NetworkImage(recommendation.coin.image),
-                        backgroundColor: Colors.transparent,
-                      ),
+                      child: const Icon(Icons.auto_awesome, color: Colors.deepPurple, size: 24),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(width: 12),
                     Text(
-                      recommendation.coin.name,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      'AI Analysis Report',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: isDark ? Colors.white : Colors.deepPurple,
                           ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.green.withOpacity(0.3),
-                            Colors.green.withOpacity(0.1),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.green.withOpacity(0.4),
-                        ),
-                      ),
-                      child: Text(
-                        recommendation.prediction.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 28),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [
-                                Colors.white.withOpacity(0.1),
-                                Colors.white.withOpacity(0.05),
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.7),
-                                Colors.white.withOpacity(0.4),
-                              ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.2)
-                            : Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.blue.withOpacity(0.3),
-                                    Colors.blue.withOpacity(0.1),
-                                  ],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.insights, color: Colors.blue, size: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Confidence Score',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                          ],
+                const SizedBox(height: 28),
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.deepPurple.withOpacity(0.4),
+                              Colors.deepPurple.withOpacity(0.2),
+                            ],
+                          ),
+                          border: Border.all(
+                            color: Colors.deepPurple.withOpacity(0.5),
+                            width: 2,
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '${(recommendation.confidenceScore * 100).toStringAsFixed(0)}%',
+                        child: CircleAvatar(
+                          radius: 36,
+                          backgroundImage: NetworkImage(recommendation.coin.image),
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        recommendation.coin.name,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.withOpacity(0.3),
+                              Colors.green.withOpacity(0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.4),
+                          ),
+                        ),
+                        child: Text(
+                          recommendation.prediction.toUpperCase(),
                           style: TextStyle(
-                            fontSize: 32,
+                            color: Colors.green.shade700,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 13,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [
-                                Colors.white.withOpacity(0.1),
-                                Colors.white.withOpacity(0.05),
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.7),
-                                Colors.white.withOpacity(0.4),
-                              ],
+                const SizedBox(height: 28),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [
+                                  Colors.white.withOpacity(0.1),
+                                  Colors.white.withOpacity(0.05),
+                                ]
+                              : [
+                                  Colors.white.withOpacity(0.7),
+                                  Colors.white.withOpacity(0.4),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Colors.white.withOpacity(0.5),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.2)
-                            : Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.orange.withOpacity(0.3),
-                                    Colors.orange.withOpacity(0.1),
-                                  ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.blue.withOpacity(0.3),
+                                      Colors.blue.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
                                 ),
-                                shape: BoxShape.circle,
+                                child: const Icon(Icons.insights, color: Colors.blue, size: 18),
                               ),
-                              child: const Icon(Icons.lightbulb, color: Colors.orange, size: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Why this coin?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          recommendation.reason,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: isDark ? Colors.white.withOpacity(0.9) : Colors.grey.shade800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [
-                                Colors.white.withOpacity(0.1),
-                                Colors.white.withOpacity(0.05),
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.7),
-                                Colors.white.withOpacity(0.4),
-                              ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.2)
-                            : Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.purple.withOpacity(0.3),
-                                    Colors.purple.withOpacity(0.1),
-                                  ],
+                              const SizedBox(width: 8),
+                              Text(
+                                'Confidence Score',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isDark ? Colors.white : Colors.black87,
                                 ),
-                                shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.water_drop, color: Colors.purple, size: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Whale Activity',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          recommendation.whaleActivitySummary,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: isDark ? Colors.white.withOpacity(0.9) : Colors.grey.shade800,
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Text(
+                            '${(recommendation.confidenceScore * 100).toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [
+                                  Colors.white.withOpacity(0.1),
+                                  Colors.white.withOpacity(0.05),
+                                ]
+                              : [
+                                  Colors.white.withOpacity(0.7),
+                                  Colors.white.withOpacity(0.4),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.orange.withOpacity(0.3),
+                                      Colors.orange.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.lightbulb, color: Colors.orange, size: 18),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Why this coin?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            recommendation.reason,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: isDark ? Colors.white.withOpacity(0.9) : Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  elevation: 0,
                 ),
-                child: const Text(
-                  'Got it!',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [
+                                  Colors.white.withOpacity(0.1),
+                                  Colors.white.withOpacity(0.05),
+                                ]
+                              : [
+                                  Colors.white.withOpacity(0.7),
+                                  Colors.white.withOpacity(0.4),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.purple.withOpacity(0.3),
+                                      Colors.purple.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.water_drop, color: Colors.purple, size: 18),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Whale Activity',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            recommendation.whaleActivitySummary,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: isDark ? Colors.white.withOpacity(0.9) : Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Got it!',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

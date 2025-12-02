@@ -91,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Consumer<HomeViewModel>(
             builder: (context, viewModel, child) {
               if (viewModel.state == HomeState.loading) {
@@ -104,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return RefreshIndicator(
                 onRefresh: () => viewModel.loadCoins(),
                 child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 100),
                   itemCount: viewModel.coins.length,
                   itemBuilder: (context, index) {
                     return CryptoListTile(coin: viewModel.coins[index]);
