@@ -25,12 +25,22 @@ class HomeViewModel extends ChangeNotifier {
   bool _isRecommendationLoading = false;
   bool get isRecommendationLoading => _isRecommendationLoading;
 
+  String _currency = 'usd';
+  String get currency => _currency;
+
+  void updateCurrency(String newCurrency) {
+    if (_currency != newCurrency) {
+      _currency = newCurrency;
+      loadCoins();
+    }
+  }
+
   Future<void> loadCoins() async {
     _state = HomeState.loading;
     notifyListeners();
 
     try {
-      _coins = await repository.getTopCoins();
+      _coins = await repository.getTopCoins(currencyCode: _currency);
       _state = HomeState.loaded;
     } catch (e) {
       _state = HomeState.error;

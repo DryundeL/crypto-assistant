@@ -19,5 +19,10 @@
   "chart1M": "1M",
   "chart1Y": "1Y",
   "marketCap": "Market Cap",
-  "volume": "Volume"
+  "volume": "Volume",
+  "news": "News",
+  "home": "Home",
+  "noNews": "No news available",
+  "retry": "Retry",
+  "currency": "Currency"
 }

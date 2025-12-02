@@ -70,4 +70,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get volume => 'Volume';
+
+  @override
+  String get news => 'News';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get noNews => 'No news available';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get currency => 'Currency';
 }

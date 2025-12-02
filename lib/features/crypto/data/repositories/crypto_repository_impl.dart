@@ -9,8 +9,8 @@ class CryptoRepositoryImpl implements ICryptoRepository {
   CryptoRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<CryptoCoinEntity>> getTopCoins() async {
-    return await remoteDataSource.getTopCoins();
+  Future<List<CryptoCoinEntity>> getTopCoins({String currencyCode = 'usd'}) async {
+    return await remoteDataSource.getTopCoins(currencyCode: currencyCode);
   }
 
   @override

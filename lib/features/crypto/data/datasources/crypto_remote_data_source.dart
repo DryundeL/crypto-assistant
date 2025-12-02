@@ -7,7 +7,7 @@ import '../../domain/entities/crypto_coin_entity.dart';
 import '../models/crypto_coin_model.dart';
 
 abstract class ICryptoRemoteDataSource {
-  Future<List<CryptoCoinModel>> getTopCoins();
+  Future<List<CryptoCoinModel>> getTopCoins({String currencyCode = 'usd'});
   Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins, String locale);
   Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice);
 }
@@ -19,11 +19,11 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
   CryptoRemoteDataSource({required this.client});
 
   @override
-  Future<List<CryptoCoinModel>> getTopCoins() async {
+  Future<List<CryptoCoinModel>> getTopCoins({String currencyCode = 'usd'}) async {
     try {
       final response = await client.get(
         Uri.parse(
-            '$_baseUrl/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false'),
+            '$_baseUrl/coins/markets?vs_currency=$currencyCode&order=market_cap_desc&per_page=20&page=1&sparkline=false'),
       );
 
       if (response.statusCode == 200) {

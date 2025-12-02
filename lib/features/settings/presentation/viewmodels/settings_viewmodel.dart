@@ -5,11 +5,16 @@ class SettingsViewModel extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
   static const String _localeKey = 'locale_code';
 
+  static const String _currencyKey = 'currency_code';
+
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
   Locale _locale = const Locale('en');
   Locale get locale => _locale;
+
+  String _currency = 'usd';
+  String get currency => _currency;
 
   SettingsViewModel() {
     _loadSettings();
@@ -30,6 +35,12 @@ class SettingsViewModel extends ChangeNotifier {
       _locale = Locale(localeCode);
     }
 
+    // Load Currency
+    final currencyCode = prefs.getString(_currencyKey);
+    if (currencyCode != null) {
+      _currency = currencyCode;
+    }
+
     notifyListeners();
   }
 
@@ -45,5 +56,12 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localeKey, locale.languageCode);
+  }
+
+  Future<void> updateCurrency(String currency) async {
+    _currency = currency;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_currencyKey, currency);
   }
 }

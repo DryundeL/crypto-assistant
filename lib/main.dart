@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:crypto_assistant/l10n/app_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/services/notification_service.dart';
 import 'features/crypto/data/datasources/crypto_remote_data_source.dart';
@@ -12,11 +13,23 @@ import 'features/crypto/presentation/pages/home_screen.dart';
 import 'features/crypto/presentation/viewmodels/home_viewmodel.dart';
 import 'features/settings/presentation/viewmodels/settings_viewmodel.dart';
 import 'features/settings/presentation/pages/settings_screen.dart';
+import 'features/news/data/datasources/news_remote_data_source.dart';
+import 'features/news/data/repositories/news_repository_impl.dart';
+import 'features/news/domain/repositories/i_news_repository.dart';
+import 'features/news/presentation/viewmodels/news_viewmodel.dart';
+import 'features/main_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print('Warning: .env file not found. Using mock news data.');
+  }
 
   final notificationService = NotificationService();
   await notificationService.init((payload) {
@@ -53,14 +66,57 @@ class MyApp extends StatelessWidget {
           update: (_, dataSource, __) => CryptoRepositoryImpl(remoteDataSource: dataSource),
         ),
 
+        // News Data Sources
+        ProxyProvider<http.Client, INewsRemoteDataSource>(
+          update: (_, client, __) => NewsRemoteDataSource(client: client),
+        ),
+
+        // News Repositories
+        ProxyProvider<INewsRemoteDataSource, INewsRepository>(
+          update: (_, newsDataSource, __) => NewsRepositoryImpl(
+            remoteDataSource: newsDataSource,
+          ),
+        ),
+
         // ViewModels
-        ChangeNotifierProxyProvider<ICryptoRepository, HomeViewModel>(
+        ChangeNotifierProvider(create: (_) => SettingsViewModel()),
+        ChangeNotifierProxyProvider2<ICryptoRepository, SettingsViewModel, HomeViewModel>(
           create: (context) => HomeViewModel(
               repository: Provider.of<ICryptoRepository>(context, listen: false)),
-          update: (_, repository, viewModel) => 
-              viewModel ?? HomeViewModel(repository: repository),
+          update: (_, repository, settings, viewModel) {
+            final vm = viewModel ?? HomeViewModel(repository: repository);
+            vm.updateCurrency(settings.currency);
+            return vm;
+          },
         ),
-        ChangeNotifierProvider(create: (_) => SettingsViewModel()),
+        ChangeNotifierProxyProvider3<INewsRepository, SettingsViewModel, HomeViewModel, NewsViewModel>(
+          create: (context) {
+            final newsRepo = Provider.of<INewsRepository>(context, listen: false);
+            final settings = Provider.of<SettingsViewModel>(context, listen: false);
+            final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
+            
+            // Update repository with current coins
+            if (newsRepo is NewsRepositoryImpl) {
+              newsRepo.updateCoins(homeViewModel.coins);
+            }
+            
+            return NewsViewModel(
+              repository: newsRepo,
+              locale: settings.locale.languageCode,
+            );
+          },
+          update: (_, newsRepo, settings, homeViewModel, viewModel) {
+            // Update repository with latest coins
+            if (newsRepo is NewsRepositoryImpl) {
+              newsRepo.updateCoins(homeViewModel.coins);
+            }
+            
+            if (viewModel == null || viewModel.locale != settings.locale.languageCode) {
+              return NewsViewModel(repository: newsRepo, locale: settings.locale.languageCode);
+            }
+            return viewModel;
+          },
+        ),
       ],
       child: Consumer<SettingsViewModel>(
         builder: (context, settings, child) {
@@ -100,7 +156,7 @@ class MyApp extends StatelessWidget {
               Locale('en'),
               Locale('ru'),
             ],
-            home: const HomeScreen(),
+            home: const MainScreen(),
             routes: {
               '/settings': (context) => const SettingsScreen(),
             },

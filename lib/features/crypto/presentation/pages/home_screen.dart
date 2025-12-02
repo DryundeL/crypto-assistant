@@ -52,8 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Crypto Assistant'),
         actions: [
           IconButton(
@@ -67,26 +72,47 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer<HomeViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.state == HomeState.loading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (viewModel.state == HomeState.error) {
-            return Center(child: Text('Error: ${viewModel.errorMessage}'));
-          } else if (viewModel.coins.isEmpty) {
-            return const Center(child: Text('No data available'));
-          }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    const Color(0xFF1a1a2e),
+                    const Color(0xFF16213e),
+                    const Color(0xFF0f3460),
+                  ]
+                : [
+                    const Color(0xFFe3f2fd),
+                    const Color(0xFFbbdefb),
+                    const Color(0xFF90caf9),
+                  ],
+          ),
+        ),
+        child: SafeArea(
+          child: Consumer<HomeViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.state == HomeState.loading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (viewModel.state == HomeState.error) {
+                return Center(child: Text('Error: ${viewModel.errorMessage}'));
+              } else if (viewModel.coins.isEmpty) {
+                return const Center(child: Text('No data available'));
+              }
 
-          return RefreshIndicator(
-            onRefresh: () => viewModel.loadCoins(),
-            child: ListView.builder(
-              itemCount: viewModel.coins.length,
-              itemBuilder: (context, index) {
-                return CryptoListTile(coin: viewModel.coins[index]);
-              },
-            ),
-          );
-        },
+              return RefreshIndicator(
+                onRefresh: () => viewModel.loadCoins(),
+                child: ListView.builder(
+                  itemCount: viewModel.coins.length,
+                  itemBuilder: (context, index) {
+                    return CryptoListTile(coin: viewModel.coins[index]);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

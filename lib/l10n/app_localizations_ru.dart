@@ -70,4 +70,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get volume => 'Объем';
+
+  @override
+  String get news => 'Новости';
+
+  @override
+  String get home => 'Главная';
+
+  @override
+  String get noNews => 'Нет новостей';
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get currency => 'Валюта';
 }
