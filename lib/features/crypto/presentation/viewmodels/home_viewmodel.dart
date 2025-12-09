@@ -14,7 +14,15 @@ class HomeViewModel extends ChangeNotifier {
   HomeState get state => _state;
 
   List<CryptoCoinEntity> _coins = [];
-  List<CryptoCoinEntity> get coins => _coins;
+  List<CryptoCoinEntity> get coins => _searchQuery.isEmpty 
+      ? _coins 
+      : _coins.where((coin) => 
+          coin.name.toLowerCase().contains(_searchQuery.toLowerCase()) || 
+          coin.symbol.toLowerCase().contains(_searchQuery.toLowerCase())
+        ).toList();
+
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
 
   RecommendationEntity? _recommendation;
   RecommendationEntity? get recommendation => _recommendation;
@@ -63,5 +71,11 @@ class HomeViewModel extends ChangeNotifier {
       _isRecommendationLoading = false;
       notifyListeners();
     }
+
+  }
+
+  void searchCoins(String query) {
+    _searchQuery = query;
+    notifyListeners();
   }
 }

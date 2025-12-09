@@ -85,4 +85,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currency => 'Currency';
+
+  @override
+  String get wallet => 'Wallet';
 }

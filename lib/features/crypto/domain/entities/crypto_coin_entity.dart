@@ -5,6 +5,7 @@ class CryptoCoinEntity {
   final double currentPrice;
   final double priceChangePercentage24h;
   final String image;
+  final DateTime? genesisDate;
 
   const CryptoCoinEntity({
     required this.id,
@@ -13,5 +14,6 @@ class CryptoCoinEntity {
     required this.currentPrice,
     required this.priceChangePercentage24h,
     required this.image,
+    this.genesisDate,
   });
 }

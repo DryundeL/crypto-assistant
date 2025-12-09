@@ -6,7 +6,10 @@ import 'package:crypto_assistant/l10n/app_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/services/notification_service.dart';
+import 'features/crypto/data/datasources/coincap_remote_data_source.dart';
 import 'features/crypto/data/datasources/crypto_remote_data_source.dart';
+import 'features/crypto/data/datasources/cryptocompare_remote_data_source.dart';
+import 'features/crypto/data/datasources/coin_detail_scraper.dart';
 import 'features/crypto/data/repositories/crypto_repository_impl.dart';
 import 'features/crypto/domain/repositories/i_crypto_repository.dart';
 import 'features/crypto/presentation/pages/home_screen.dart';
@@ -18,11 +21,17 @@ import 'features/news/data/repositories/news_repository_impl.dart';
 import 'features/news/domain/repositories/i_news_repository.dart';
 import 'features/news/presentation/viewmodels/news_viewmodel.dart';
 import 'features/main_screen.dart';
+import 'features/wallet/data/repositories/wallet_repository.dart';
+import 'features/wallet/domain/repositories/i_wallet_repository.dart';
+import 'features/wallet/presentation/cubit/wallet_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
 
   // Load environment variables
   try {
@@ -43,11 +52,13 @@ void main() async {
   
   await notificationService.scheduleDailyNotification();
 
-  runApp(const MyApp());
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+
+  const MyApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -57,13 +68,25 @@ class MyApp extends StatelessWidget {
         Provider(create: (_) => http.Client()),
         
         // Data Sources
-        ProxyProvider<http.Client, ICryptoRemoteDataSource>(
+        ProxyProvider<http.Client, CoinCapRemoteDataSource>(
+          update: (_, client, __) => CoinCapRemoteDataSource(client: client),
+        ),
+        ProxyProvider<http.Client, CryptoRemoteDataSource>(
           update: (_, client, __) => CryptoRemoteDataSource(client: client),
+        ),
+        ProxyProvider<http.Client, CryptoCompareRemoteDataSource>(
+          update: (_, client, __) => CryptoCompareRemoteDataSource(client: client),
+        ),
+        ProxyProvider<http.Client, CoinDetailScraper>(
+          update: (_, client, __) => CoinDetailScraper(client: client),
         ),
 
         // Repositories
-        ProxyProvider<ICryptoRemoteDataSource, ICryptoRepository>(
-          update: (_, dataSource, __) => CryptoRepositoryImpl(remoteDataSource: dataSource),
+        ProxyProvider4<CoinCapRemoteDataSource, CryptoRemoteDataSource, CryptoCompareRemoteDataSource, CoinDetailScraper, ICryptoRepository>(
+          update: (_, coincap, coingecko, cryptocompare, scraper, __) => CryptoRepositoryImpl(
+            dataSources: [coingecko, cryptocompare],
+            scraper: scraper,
+          ),
         ),
 
         // News Data Sources
@@ -76,6 +99,11 @@ class MyApp extends StatelessWidget {
           update: (_, newsDataSource, __) => NewsRepositoryImpl(
             remoteDataSource: newsDataSource,
           ),
+        ),
+
+        // Wallet Repository
+        Provider<IWalletRepository>(
+          create: (_) => WalletRepository(prefs),
         ),
 
         // ViewModels
@@ -116,6 +144,14 @@ class MyApp extends StatelessWidget {
             }
             return viewModel;
           },
+        ),
+
+        // Wallet Cubit
+        BlocProvider<WalletCubit>(
+          create: (context) => WalletCubit(
+            walletRepository: Provider.of<IWalletRepository>(context, listen: false),
+            cryptoRepository: Provider.of<ICryptoRepository>(context, listen: false),
+          ),
         ),
       ],
       child: Consumer<SettingsViewModel>(

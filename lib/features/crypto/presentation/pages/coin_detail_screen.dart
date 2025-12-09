@@ -33,7 +33,8 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
     setState(() => _isLoading = true);
     try {
       final repository = Provider.of<ICryptoRepository>(context, listen: false);
-      final data = await repository.getMarketChart(widget.coin.id, _selectedPeriod, widget.coin.currentPrice);
+      final currency = Provider.of<SettingsViewModel>(context, listen: false).currency;
+      final data = await repository.getMarketChart(widget.coin.id, _selectedPeriod, widget.coin.currentPrice, currency);
       setState(() {
         _chartData = data;
         _isLoading = false;
@@ -75,10 +76,7 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
     final symbol = _getCurrencySymbol(currency);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         title: Text(widget.coin.name),
         iconTheme: IconThemeData(
           color: isDark ? Colors.white : Colors.black,
@@ -89,115 +87,73 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xFF1a1a2e),
-                    const Color(0xFF16213e),
-                    const Color(0xFF0f3460),
-                  ]
-                : [
-                    const Color(0xFFe3f2fd),
-                    const Color(0xFFbbdefb),
-                    const Color(0xFF90caf9),
-                  ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.deepPurple.withOpacity(0.4),
-                              Colors.deepPurple.withOpacity(0.2),
-                            ],
-                          ),
-                          border: Border.all(
-                            color: Colors.deepPurple.withOpacity(0.5),
-                            width: 2,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundImage: NetworkImage(widget.coin.image),
-                          backgroundColor: Colors.transparent,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '$symbol${(_selectedPrice ?? widget.coin.currentPrice).toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isPositive
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isPositive
-                                ? Colors.green.withOpacity(0.3)
-                                : Colors.red.withOpacity(0.3),
-                          ),
-                        ),
-                        child: _selectedDate != null
-                            ? Text(
-                                DateFormat('MM/dd HH:mm').format(
-                                    DateTime.fromMillisecondsSinceEpoch(_selectedDate!)),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: isDark ? Colors.white70 : Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              )
-                            : Text(
-                                '${isPositive ? '+' : ''}${widget.coin.priceChangePercentage24h.toStringAsFixed(2)}%',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: isPositive ? Colors.green : Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildPeriodSelector(l10n, isDark),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.white.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.white.withOpacity(0.4),
-                      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: NetworkImage(widget.coin.image),
+                      backgroundColor: Colors.transparent,
                     ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '$symbol${(_selectedPrice ?? widget.coin.currentPrice).toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isPositive
+                            ? Colors.green.withOpacity(0.1)
+                            : Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isPositive
+                              ? Colors.green.withOpacity(0.3)
+                              : Colors.red.withOpacity(0.3),
+                        ),
+                      ),
+                      child: _selectedDate != null
+                          ? Text(
+                              DateFormat('MM/dd HH:mm').format(
+                                  DateTime.fromMillisecondsSinceEpoch(_selectedDate!)),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isDark ? Colors.white70 : Colors.grey.shade800,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          : Text(
+                              '${isPositive ? '+' : ''}${widget.coin.priceChangePercentage24h.toStringAsFixed(2)}%',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isPositive ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildPeriodSelector(l10n, isDark),
+              const SizedBox(height: 24),
+              Expanded(
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : _chartData == null || _chartData!.isEmpty
@@ -227,13 +183,14 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                                         return touchedSpots.map((LineBarSpot touchedSpot) {
                                           return LineTooltipItem(
                                             '$symbol${touchedSpot.y.toStringAsFixed(2)}',
-                                            const TextStyle(
-                                              color: Colors.white,
+                                            TextStyle(
+                                              color: isDark ? Colors.white : Colors.black,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           );
                                         }).toList();
                                       },
+                                      tooltipBgColor: isDark ? Colors.grey[800]! : Colors.white,
                                     ),
                                   ),
                                   gridData: const FlGridData(show: false),
@@ -297,8 +254,8 @@ class _CoinDetailScreenState extends State<CoinDetailScreen> {
                               ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

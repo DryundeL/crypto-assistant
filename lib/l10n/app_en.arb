@@ -24,5 +24,6 @@
   "home": "Home",
   "noNews": "No news available",
   "retry": "Retry",
-  "currency": "Currency"
+  "currency": "Currency",
+  "wallet": "Wallet"
 }

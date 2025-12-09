@@ -85,4 +85,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get currency => 'Валюта';
+
+  @override
+  String get wallet => 'Кошелек';
 }

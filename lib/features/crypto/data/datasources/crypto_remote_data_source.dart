@@ -9,7 +9,9 @@ import '../models/crypto_coin_model.dart';
 abstract class ICryptoRemoteDataSource {
   Future<List<CryptoCoinModel>> getTopCoins({String currencyCode = 'usd'});
   Future<RecommendationEntity> getAiRecommendation(List<CryptoCoinEntity> coins, String locale);
-  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice);
+  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice, String currencyCode);
+  Future<CryptoCoinModel> getCoinDetails(String id);
+  Future<double?> getCoinPriceAtDate(String coinId, String symbol, DateTime date, String currencyCode);
 }
 
 class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
@@ -23,7 +25,7 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
     try {
       final response = await client.get(
         Uri.parse(
-            '$_baseUrl/coins/markets?vs_currency=$currencyCode&order=market_cap_desc&per_page=20&page=1&sparkline=false'),
+            '$_baseUrl/coins/markets?vs_currency=$currencyCode&order=market_cap_desc&per_page=50&page=1&sparkline=false'),
       );
 
       if (response.statusCode == 200) {
@@ -35,8 +37,100 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
       }
     } catch (e) {
       print('Network Error: $e');
-      return _getMockCoins();
+      throw Exception('CoinGecko failed: $e');
     }
+  }
+
+  Future<CryptoCoinModel> getCoinDetails(String id) async {
+    try {
+      final response = await client.get(
+        Uri.parse('$_baseUrl/coins/$id?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false'),
+      );
+
+      if (response.statusCode == 200) {
+        return CryptoCoinModel.fromJson(json.decode(response.body));
+      } else {
+        // Fallback to mock if API fails (e.g. rate limit)
+        return _getMockCoinDetails(id);
+      }
+    } catch (e) {
+      throw Exception('CoinGecko details failed: $e');
+    }
+  }
+
+  @override
+  Future<double?> getCoinPriceAtDate(String coinId, String symbol, DateTime date, String currencyCode) async {
+    try {
+      final resolvedId = _resolveId(coinId, symbol);
+      final formattedDate = "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+      final response = await client.get(
+        Uri.parse('$_baseUrl/coins/$resolvedId/history?date=$formattedDate&localization=false'),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final marketData = jsonResponse['market_data'];
+        if (marketData != null) {
+          final currentPrice = marketData['current_price'];
+          if (currentPrice != null) {
+             return (currentPrice[currencyCode.toLowerCase()] as num).toDouble();
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      print('CoinGecko historical price failed: $e');
+      return null;
+    }
+  }
+
+  String _resolveId(String id, String symbol) {
+    if (id.length <= 5 || id == id.toUpperCase()) {
+      final map = {
+        'BTC': 'bitcoin',
+        'ETH': 'ethereum',
+        'SOL': 'solana',
+        'XRP': 'ripple',
+        'ADA': 'cardano',
+        'AVAX': 'avalanche-2',
+        'DOGE': 'dogecoin',
+        'DOT': 'polkadot',
+        'LINK': 'chainlink',
+        'MATIC': 'matic-network',
+        'SHIB': 'shiba-inu',
+        'LTC': 'litecoin',
+        'UNI': 'uniswap',
+        'BCH': 'bitcoin-cash',
+        'NEAR': 'near',
+        'APT': 'aptos',
+        'ATOM': 'cosmos',
+        'XLM': 'stellar',
+        'XMR': 'monero',
+        'ETC': 'ethereum-classic',
+        'TON': 'the-open-network',
+        'NOT': 'notcoin',
+        'DOGS': 'dogs-2',
+        'USDT': 'tether',
+        'USDC': 'usd-coin',
+      };
+      return map[symbol.toUpperCase()] ?? id.toLowerCase();
+    }
+    return id;
+  }
+
+  CryptoCoinModel _getMockCoinDetails(String id) {
+    final mockCoins = _getMockCoins();
+    final coin = mockCoins.firstWhere((c) => c.id == id, orElse: () => mockCoins.first);
+    // Add fake genesis date for mock
+    return CryptoCoinModel(
+      id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      currentPrice: coin.currentPrice,
+      priceChangePercentage24h: coin.priceChangePercentage24h,
+      image: coin.image,
+      genesisDate: DateTime(2010, 1, 1), // Default mock genesis
+    );
   }
 
   @override
@@ -216,7 +310,7 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
   }
 
   @override
-  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice) async {
+  Future<List<List<double>>> getMarketChart(String coinId, String period, double currentPrice, String currencyCode) async {
     try {
       // Map period to days parameter for API
       int days;
@@ -230,7 +324,7 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
       }
 
       final response = await client.get(
-        Uri.parse('$_baseUrl/coins/$coinId/market_chart?vs_currency=usd&days=$days'),
+        Uri.parse('$_baseUrl/coins/$coinId/market_chart?vs_currency=$currencyCode&days=$days'),
       );
 
       if (response.statusCode == 200) {
@@ -458,6 +552,41 @@ class CryptoRemoteDataSource implements ICryptoRemoteDataSource {
           currentPrice: 45.0 + (random.nextDouble() * 1),
           priceChangePercentage24h: -2.0 + randomChange(),
           image: 'https://assets.coingecko.com/coins/images/453/large/ethereum-classic-logo.png'),
+      CryptoCoinModel(
+          id: 'the-open-network',
+          symbol: 'ton',
+          name: 'Toncoin',
+          currentPrice: 5.5 + (random.nextDouble() * 0.2),
+          priceChangePercentage24h: 1.2 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/17980/large/ton_symbol.png'),
+      CryptoCoinModel(
+          id: 'notcoin',
+          symbol: 'not',
+          name: 'Notcoin',
+          currentPrice: 0.0075 + (random.nextDouble() * 0.0005),
+          priceChangePercentage24h: 5.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/34888/large/notcoin.jpg'),
+      CryptoCoinModel(
+          id: 'dogs-2',
+          symbol: 'dogs',
+          name: 'DOGS',
+          currentPrice: 0.00065 + (random.nextDouble() * 0.00005),
+          priceChangePercentage24h: -2.5 + randomChange(),
+          image: 'https://assets.coingecko.com/coins/images/39126/large/dogs.jpg'),
+      CryptoCoinModel(
+          id: 'tether',
+          symbol: 'usdt',
+          name: 'Tether',
+          currentPrice: 1.0,
+          priceChangePercentage24h: 0.01,
+          image: 'https://assets.coingecko.com/coins/images/325/large/Tether.png'),
+      CryptoCoinModel(
+          id: 'usd-coin',
+          symbol: 'usdc',
+          name: 'USDC',
+          currentPrice: 1.0,
+          priceChangePercentage24h: 0.00,
+          image: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png'),
     ];
   }
 }

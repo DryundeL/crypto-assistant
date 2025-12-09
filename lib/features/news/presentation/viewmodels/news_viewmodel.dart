@@ -7,7 +7,9 @@ class NewsViewModel extends ChangeNotifier {
   final INewsRepository repository;
   final String locale;
 
-  NewsViewModel({required this.repository, required this.locale});
+  NewsViewModel({required this.repository, required this.locale}) {
+    loadNews();
+  }
 
   List<NewsArticleEntity> _allNews = [];
   MarketSentimentEntity? _sentiment;

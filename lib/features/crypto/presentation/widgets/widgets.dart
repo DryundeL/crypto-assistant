@@ -37,123 +37,62 @@ class CryptoListTile extends StatelessWidget {
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ClipRRect(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [
-                        Colors.white.withOpacity(0.1),
-                        Colors.white.withOpacity(0.05),
-                      ]
-                    : [
-                        Colors.white.withOpacity(0.7),
-                        Colors.white.withOpacity(0.3),
-                      ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.white.withOpacity(0.5),
-                width: 1.5,
-              ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CoinDetailScreen(coin: coin),
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CoinDetailScreen(coin: coin),
-                  ),
-                );
-              },
-              leading: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.deepPurple.withOpacity(0.3),
-                      Colors.deepPurple.withOpacity(0.1),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: Colors.deepPurple.withOpacity(0.3),
-                  ),
-                ),
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  backgroundImage: NetworkImage(coin.image),
-                ),
-              ),
-              title: Text(
-                coin.name,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              subtitle: Text(
-                coin.symbol.toUpperCase(),
-                style: TextStyle(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.6)
-                      : Colors.grey.shade600,
-                ),
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$symbol${coin.currentPrice.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isPositive
-                            ? [
-                                Colors.green.withOpacity(0.3),
-                                Colors.green.withOpacity(0.1),
-                              ]
-                            : [
-                                Colors.red.withOpacity(0.3),
-                                Colors.red.withOpacity(0.1),
-                              ],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isPositive
-                            ? Colors.green.withOpacity(0.4)
-                            : Colors.red.withOpacity(0.4),
-                      ),
-                    ),
-                    child: Text(
-                      '${isPositive ? '+' : ''}${coin.priceChangePercentage24h.toStringAsFixed(2)}%',
-                      style: TextStyle(
-                        color: isPositive ? Colors.green.shade700 : Colors.red.shade700,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          );
+        },
+        leading: SizedBox(
+          width: 40,
+          height: 40,
+          child: Image.network(coin.image),
+        ),
+        title: Text(
+          coin.name,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: isDark ? Colors.white : Colors.black87,
           ),
+        ),
+        subtitle: Text(
+          coin.symbol.toUpperCase(),
+          style: TextStyle(
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
+            fontSize: 14,
+          ),
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '$symbol${coin.currentPrice.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${isPositive ? '+' : ''}${coin.priceChangePercentage24h.toStringAsFixed(2)}%',
+              style: TextStyle(
+                color: isPositive ? const Color(0xFF4CAF50) : const Color(0xFFE53935),
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
